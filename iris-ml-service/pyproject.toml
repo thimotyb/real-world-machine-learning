@@ -1,0 +1,13 @@
+[project]
+name = "iris-ml-service"
+version = "0.1.0"
+description = "Iris classifier served with FastAPI"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]==0.115.6",  # includes uvicorn and the `fastapi` command
+    "scikit-learn==1.6.1",
+]
+
+# Tells the `fastapi dev` / `fastapi run` commands where the app object is
+[tool.fastapi]
+entrypoint = "main:app"
