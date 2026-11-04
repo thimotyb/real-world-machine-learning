@@ -10,6 +10,8 @@ iris-ml-service/
 ├── main.py     API FastAPI                             (celle Flask del notebook)
 ├── pyproject.toml   dipendenze + entrypoint FastAPI
 ├── Dockerfile
+├── terraform/  API + repository Artifact Registry
+├── scripts/    deploy.sh: build, push, deploy su Cloud Run
 └── postman/    collection per le chiamate di prova
 ```
 
@@ -58,5 +60,31 @@ curl -X POST http://localhost:8000/predict \
   -d '{"sepal_length":5.1,"sepal_width":3.4,"petal_length":1.3,"petal_width":0.2}'
 ```
 
-## 5. Passi successivi (corso)
+## 5. Deploy su Google Cloud (Terraform + script)
+
+Prerequisiti: `gcloud auth login`, Docker e Terraform installati.
+
+**a) Infrastruttura con Terraform** (abilita le API e crea il repository Artifact Registry):
+
+```bash
+cd terraform
+cp terraform.tfvars.example terraform.tfvars   # imposta project_id
+terraform init
+terraform apply
+cd ..
+```
+
+**b) Push dell'immagine e deploy su Cloud Run:**
+
+```bash
+./scripts/deploy.sh
+```
+
+Lo script costruisce l'immagine, la carica su Artifact Registry, la distribuisce
+su Cloud Run e stampa l'URL del servizio: usalo come `base_url` in Postman.
+Ogni esecuzione crea una nuova revisione (utile per mostrare rollback e revisioni).
+Si possono cambiare i valori con variabili d'ambiente, ad esempio
+`PROJECT_ID=... REGION=... ./scripts/deploy.sh`.
+
+## 6. Passi successivi (corso)
 Artifact Registry (push dell'immagine) → Cloud Run (deploy) → Cloud Build (automazione).
