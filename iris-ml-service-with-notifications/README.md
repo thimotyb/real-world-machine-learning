@@ -4,6 +4,10 @@ Evoluzione di `iris-ml-service`: il modello non è più dentro l'immagine ma viv
 bucket. Quando qualcuno carica un nuovo CSV, Google Cloud avvisa un servizio di training
 che addestra un nuovo modello e fa ripartire l'API con il modello nuovo.
 
+![Architettura: nuovo CSV nel bucket, training, redeploy dell'API](docs/architecture.svg)
+
+*Diagramma con le icone ufficiali di [Google Cloud](https://cloud.google.com/icons).*
+
 ```
  CSV ──► bucket  ──notifica (Eventarc)──► iris-trainer (Cloud Run)
           data/                              │ 1. scarica il CSV e addestra

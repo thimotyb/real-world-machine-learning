@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="740" viewBox="0 0 1300 740" font-family="Roboto, Arial, Helvetica, sans-serif">
+<defs>
+<style>.t{font-size:17px;font-weight:700;fill:#202124}.s{font-size:13px;fill:#5f6368}.l{font-size:13px;font-weight:700}.h{font-size:22px;font-weight:700;fill:#202124}.f{font-size:13px;fill:#202124}</style>
+<marker id="arr" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L12,6 L0,12 z" fill="#1a73e8"/></marker>
+<marker id="arrd" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L12,6 L0,12 z" fill="#80868b"/></marker>
+</defs>
+<rect width="1300" height="740" fill="#f8f9fa"/>
+<text x="30" y="38" class="h">Iris ML Service con notifiche: nuovo CSV nel bucket → training → redeploy</text>
+<rect x="20" y="150" width="150" height="120" rx="12" fill="#ffffff" stroke="#dadce0" stroke-width="2"/><text x="36" y="182" class="t">Utente</text><text x="36" y="204" class="s">carica un CSV</text><text x="36" y="222" class="s">nel bucket</text>
+<g transform="translate(125,205) scale(0.85)"><path d="M0,0 h22 l10,10 v30 h-32 z" fill="#e8f0fe" stroke="#4285f4" stroke-width="2"/><text x="3" y="30" font-size="11" font-weight="700" fill="#1a73e8">CSV</text></g>
+<rect x="260" y="60" width="290" height="250" rx="12" fill="#ffffff" stroke="#dadce0" stroke-width="2"/>
+<svg x="274" y="72" width="44" height="44" viewBox="0 0 24 24"><defs><style>.cloud_storage-cls-1{fill:#aecbfa;}.cloud_storage-cls-2{fill:#669df6;}.cloud_storage-cls-3{fill:#4285f4;}.cloud_storage-cls-4{fill:#fff;}</style></defs><g data-name="Product Icons"><rect class="cloud_storage-cls-1" x="2" y="4" width="20" height="7"/><rect class="cloud_storage-cls-2" x="20" y="4" width="2" height="7"/><polygon class="cloud_storage-cls-3" points="22 4 20 4 20 11 22 4"/><rect class="cloud_storage-cls-2" x="2" y="4" width="2" height="7"/><rect class="cloud_storage-cls-4" x="6" y="7" width="6" height="1"/><rect class="cloud_storage-cls-4" x="15" y="6" width="3" height="3" rx="1.5"/><rect class="cloud_storage-cls-1" x="2" y="13" width="20" height="7"/><rect class="cloud_storage-cls-2" x="20" y="13" width="2" height="7"/><polygon class="cloud_storage-cls-3" points="22 13 20 13 20 20 22 13"/><rect class="cloud_storage-cls-2" x="2" y="13" width="2" height="7"/><rect class="cloud_storage-cls-4" x="6" y="16" width="6" height="1"/><rect class="cloud_storage-cls-4" x="15" y="15" width="3" height="3" rx="1.5"/></g></svg>
+<text x="328" y="92" class="t">Cloud Storage</text><text x="328" y="110" class="s">bucket &lt;progetto&gt;-iris-data</text>
+<rect x="280" y="130" width="250" height="50" rx="8" fill="#e8f0fe" stroke="#aecbfa"/><text x="296" y="152" class="t" fill="#174ea6">models/</text><text x="296" y="170" class="s">model-&lt;generation&gt;.pkl</text>
+<rect x="280" y="200" width="250" height="50" rx="8" fill="#e6f4ea" stroke="#a8dab5"/><text x="296" y="222" class="t" fill="#137333">data/</text><text x="296" y="240" class="s">iris-small.csv, iris-full.csv</text>
+<text x="280" y="285" class="s">Solo l'API legge i modelli;</text><text x="280" y="301" class="s">solo il trainer li scrive.</text>
+<rect x="670" y="150" width="150" height="120" rx="12" fill="#ffffff" stroke="#dadce0" stroke-width="2"/><svg x="684" y="162" width="44" height="44" viewBox="0 0 24 24"><polygon points="17.98 7.06 7.26 17.75 6.35 16.84 17.06 6.14 17.98 7.06" style="fill:#4285f4"/><circle cx="12" cy="12.06" r="2.82" transform="translate(-5.01 11.71) rotate(-43.97)" style="fill:#669df6"/><path d="M21.75,12a9.69,9.69,0,0,1-1.91,5.79,1.54,1.54,0,0,0-1-.78,8.43,8.43,0,0,0,1.28-7.48,4.13,4.13,0,0,0,1.15-.67A9.62,9.62,0,0,1,21.75,12Zm-4,7.84a9.73,9.73,0,0,1-8.93,1.39,4.13,4.13,0,0,0,.67-1.15A8.43,8.43,0,0,0,17,18.8,1.54,1.54,0,0,0,17.79,19.84ZM15.14,2.77a4.13,4.13,0,0,0-.67,1.15l-.05,0A8.46,8.46,0,0,0,7,5.2a1.57,1.57,0,0,0-.78-1,9.73,9.73,0,0,1,8.93-1.39ZM5.2,7a8.43,8.43,0,0,0-1.28,7.48,4.13,4.13,0,0,0-1.15.67A9.73,9.73,0,0,1,4.16,6.21,1.54,1.54,0,0,0,5.2,7Z" style="fill:#4285f4"/><path d="M19.52,5.51a1,1,0,1,0-1,1A1,1,0,0,0,19.52,5.51Zm1.36,0A2.38,2.38,0,1,1,18.5,3.13,2.38,2.38,0,0,1,20.88,5.51Z" style="fill:#aecbfa;fill-rule:evenodd"/><path d="M19.52,18.55a1,1,0,1,0-1,1A1,1,0,0,0,19.52,18.55Zm1.36,0a2.38,2.38,0,1,1-2.38-2.39A2.39,2.39,0,0,1,20.88,18.55Z" style="fill:#aecbfa;fill-rule:evenodd"/><path d="M6.46,18.55a1,1,0,1,0-1,1A1,1,0,0,0,6.46,18.55Zm1.36,0a2.38,2.38,0,1,1-2.37-2.39A2.38,2.38,0,0,1,7.82,18.55Z" style="fill:#aecbfa;fill-rule:evenodd"/><path d="M6.46,5.51a1,1,0,1,0-1,1A1,1,0,0,0,6.46,5.51Zm1.36,0A2.38,2.38,0,1,1,5.45,3.13,2.37,2.37,0,0,1,7.82,5.51Z" style="fill:#aecbfa;fill-rule:evenodd"/></svg><text x="740" y="182" class="t">Eventarc</text><text x="740" y="204" class="s">trigger</text><text x="740" y="222" class="s">iris-new-file</text>
+<rect x="950" y="60" width="320" height="270" rx="12" fill="#ffffff" stroke="#4285f4" stroke-width="2.5"/>
+<svg x="964" y="72" width="44" height="44" viewBox="0 0 24 24"><defs><style>.cloud_run-cls-1{fill:#aecbfa;}.cloud_run-cls-1,.cloud_run-cls-2{fill-rule:evenodd;}.cloud_run-cls-2{fill:#4285f4;}</style></defs><g data-name="Product Icons"><g ><polygon class="cloud_run-cls-1" points="8.9 2.63 12.02 12 21.38 12 8.9 2.63"/><polygon class="cloud_run-cls-2" points="21.38 12 12.02 12 8.9 21.38 21.38 12"/><polygon class="cloud_run-cls-2" points="3.44 21.38 6.57 19.81 8.9 12 5.78 12 3.44 21.38"/><polygon class="cloud_run-cls-1" points="3.44 2.63 5.78 12 8.9 12 6.57 4.19 3.44 2.63"/></g></g></svg>
+<text x="1018" y="92" class="t">Cloud Run: iris-trainer</text><text x="1018" y="110" class="s">privato, lo chiama solo Eventarc</text>
+<text x="968" y="148" class="f">• legge il CSV dal bucket</text>
+<text x="968" y="170" class="f">• addestra il modello (SVM)</text>
+<text x="968" y="192" class="f">• salva models/model-&lt;generation&gt;.pkl</text>
+<text x="968" y="214" class="f">• ignora duplicati e file non CSV in data/</text>
+<text x="968" y="236" class="f">• imposta MODEL_URI sul servizio API</text>
+<svg x="964" y="288" width="28" height="28" viewBox="0 0 24 24"><defs><style>.identity_and_access_management-cls-1{fill:#669df6;}.identity_and_access_management-cls-1,.identity_and_access_management-cls-2{fill-rule:evenodd;}.identity_and_access_management-cls-2{fill:#4285f4;}</style></defs><g data-name="Product Icons"><g ><path class="identity_and_access_management-cls-1" d="M12,2,3.79,5.42v5.63c0,5.06,3.5,9.8,8.21,11,4.71-1.15,8.21-5.89,8.21-10.95V5.42Zm0,3.79a2.63,2.63,0,1,1-1.86.77A2.63,2.63,0,0,1,12,5.79Zm4.11,11.15A8.64,8.64,0,0,1,12,19.87a8.64,8.64,0,0,1-4.11-2.93V14.69c0-1.67,2.74-2.52,4.11-2.52s4.11.85,4.11,2.52v2.25Z"/><path class="identity_and_access_management-cls-2" d="M12,2V5.79a2.63,2.63,0,1,1,0,5.26v1.12c1.37,0,4.11.85,4.11,2.52v2.25A8.64,8.64,0,0,1,12,19.87V22c4.71-1.15,8.21-5.89,8.21-10.95V5.42Z"/></g></g></svg>
+<text x="1000" y="308" class="s">service account iris-trainer</text>
+<rect x="950" y="430" width="320" height="195" rx="12" fill="#ffffff" stroke="#34a853" stroke-width="2.5"/>
+<svg x="964" y="442" width="44" height="44" viewBox="0 0 24 24"><defs><style>.cloud_run-cls-1{fill:#aecbfa;}.cloud_run-cls-1,.cloud_run-cls-2{fill-rule:evenodd;}.cloud_run-cls-2{fill:#4285f4;}</style></defs><g data-name="Product Icons"><g ><polygon class="cloud_run-cls-1" points="8.9 2.63 12.02 12 21.38 12 8.9 2.63"/><polygon class="cloud_run-cls-2" points="21.38 12 12.02 12 8.9 21.38 21.38 12"/><polygon class="cloud_run-cls-2" points="3.44 21.38 6.57 19.81 8.9 12 5.78 12 3.44 21.38"/><polygon class="cloud_run-cls-1" points="3.44 2.63 5.78 12 8.9 12 6.57 4.19 3.44 2.63"/></g></g></svg>
+<text x="1018" y="462" class="t">Cloud Run: iris-api</text><text x="1018" y="480" class="s">pubblico, FastAPI</text>
+<text x="968" y="512" class="f">Ogni cambio di MODEL_URI crea una</text>
+<text x="968" y="530" class="f">nuova revisione che carica il nuovo</text>
+<text x="968" y="548" class="f">modello all'avvio (rollback = revisione</text>
+<text x="968" y="566" class="f">precedente)</text>
+<svg x="964" y="588" width="28" height="28" viewBox="0 0 24 24"><defs><style>.identity_and_access_management-cls-1{fill:#669df6;}.identity_and_access_management-cls-1,.identity_and_access_management-cls-2{fill-rule:evenodd;}.identity_and_access_management-cls-2{fill:#4285f4;}</style></defs><g data-name="Product Icons"><g ><path class="identity_and_access_management-cls-1" d="M12,2,3.79,5.42v5.63c0,5.06,3.5,9.8,8.21,11,4.71-1.15,8.21-5.89,8.21-10.95V5.42Zm0,3.79a2.63,2.63,0,1,1-1.86.77A2.63,2.63,0,0,1,12,5.79Zm4.11,11.15A8.64,8.64,0,0,1,12,19.87a8.64,8.64,0,0,1-4.11-2.93V14.69c0-1.67,2.74-2.52,4.11-2.52s4.11.85,4.11,2.52v2.25Z"/><path class="identity_and_access_management-cls-2" d="M12,2V5.79a2.63,2.63,0,1,1,0,5.26v1.12c1.37,0,4.11.85,4.11,2.52v2.25A8.64,8.64,0,0,1,12,19.87V22c4.71-1.15,8.21-5.89,8.21-10.95V5.42Z"/></g></g></svg>
+<text x="1000" y="608" class="s">service account iris-api (sola lettura)</text>
+<rect x="690" y="470" width="170" height="90" rx="12" fill="#ffffff" stroke="#dadce0" stroke-width="2"/><text x="706" y="502" class="t">Client</text><text x="706" y="524" class="s">Postman / curl</text><text x="706" y="542" class="s">POST /predict</text>
+<rect x="560" y="650" width="300" height="70" rx="12" fill="#ffffff" stroke="#dadce0" stroke-width="2"/><svg x="574" y="662" width="44" height="44" viewBox="0 0 24 24">
+<g >
+	<rect y="0" fill="none" width="24" height="24"/>
+	<polygon fill-rule="evenodd" fill="#5C85DE" points="6,2.4 0.8,5.4 0.8,19.1 6,22.1 6,19.5 3,17.8 3,6.7 6,5 	"/>
+	<polygon fill-rule="evenodd" fill="#3367D6" points="0.8,8 0.8,16.5 3,17.8 3,6.7 	"/>
+	<polygon fill-rule="evenodd" fill="#3367D6" points="0.8,8 3,7.5 3,6.7 	"/>
+	<polygon fill-rule="evenodd" fill="#5C85DE" points="18,2.4 18,5 21,6.7 21,17.8 18,19.5 18,22.1 23.2,19.1 23.2,5.4 	"/>
+	<polygon fill-rule="evenodd" fill="#3367D6" points="21,17.8 23.2,16.5 23.2,8 21,6.7 	"/>
+	<polygon fill-rule="evenodd" fill="#3367D6" points="21,7.5 23.2,8 21,6.7 	"/>
+	<polygon fill-rule="evenodd" fill="#3367D6" points="21,17.1 21,17.8 23.2,16.5 	"/>
+	<g transform="translate(6.860000, 6.500000)">
+		<g transform="translate(4.540000, 0.000000)">
+			<polygon fill-rule="evenodd" fill="#5C85DE" points="0.6,-1 -2.4,0.6 0.6,2.2 3.6,0.6 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="1,5.9 3.9,4.3 3.9,1.2 1,2.8 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="0.3,2.8 -2.7,1.2 -2.7,4.3 0.3,5.9 			"/>
+		</g>
+		<g transform="translate(0.000000, 7.976190)">
+			<polygon fill-rule="evenodd" fill="#5C85DE" points="1.7,-3.1 -1.2,-1.5 1.7,0.1 4.5,-1.5 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="1.9,3.8 4.8,2.2 4.8,-1 1.9,0.6 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="1.4,0.6 -1.5,-1 -1.5,2.2 1.4,3.8 			"/>
+		</g>
+		<g transform="translate(9.360000, 7.976190)">
+			<polygon fill-rule="evenodd" fill="#5C85DE" points="-0.7,-3.1 -3.6,-1.5 -0.7,0.1 2.2,-1.5 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="-0.4,3.8 2.5,2.2 2.5,-1 -0.4,0.6 			"/>
+			<polygon fill-rule="evenodd" fill="#3367D6" points="-1,0.6 -3.9,-1 -3.9,2.2 -1,3.8 			"/>
+		</g>
+	</g>
+</g>
+</svg><text x="630" y="682" class="t">Artifact Registry</text><text x="630" y="704" class="s">immagini iris-api e iris-trainer</text>
+<path d="M170,225 H258" fill="none" stroke="#1a73e8" stroke-width="2.5" marker-end="url(#arr)"/><text x="214" y="200" class="l" text-anchor="middle" fill="#1a73e8">1. carica</text>
+<path d="M530,225 H668" fill="none" stroke="#1a73e8" stroke-width="2.5" marker-end="url(#arr)"/><text x="600" y="244" class="l" text-anchor="middle" fill="#1a73e8">2. evento</text><text x="600" y="260" class="l" text-anchor="middle" fill="#1a73e8">finalized</text>
+<path d="M820,210 H948" fill="none" stroke="#1a73e8" stroke-width="2.5" marker-end="url(#arr)"/><text x="884" y="196" class="l" text-anchor="middle" fill="#1a73e8">3. POST</text>
+<path d="M950,110 H532" fill="none" stroke="#1a73e8" stroke-width="2.5" marker-end="url(#arr)"/><text x="741" y="100" class="l" text-anchor="middle" fill="#1a73e8">4. salva il modello in models/</text>
+<path d="M1110,330 V428" fill="none" stroke="#1a73e8" stroke-width="2.5" marker-end="url(#arr)"/><text x="1100" y="384" class="l" text-anchor="end" fill="#1a73e8">5. aggiorna</text><text x="1100" y="400" class="l" text-anchor="end" fill="#1a73e8">MODEL_URI</text>
+<path d="M950,445 H405 V312" fill="none" stroke="#34a853" stroke-width="2.5" marker-end="url(#arr)"/><text x="700" y="436" class="l" text-anchor="middle" fill="#34a853">6. all'avvio legge il modello da models/</text>
+<path d="M860,515 H948" fill="none" stroke="#34a853" stroke-width="2.5" marker-end="url(#arr)"/><text x="904" y="503" class="l" text-anchor="middle" fill="#34a853">7. predict</text>
+<path d="M860,685 H1110 V627" fill="none" stroke="#80868b" stroke-width="2.5" marker-end="url(#arrd)" stroke-dasharray="7 5"/><text x="985" y="677" class="l" text-anchor="middle" fill="#80868b">deploy.sh: immagini dei due servizi</text>
+<text x="30" y="690" class="s">Terraform crea bucket, repository, service account e permessi.</text><text x="30" y="708" class="s">scripts/deploy.sh costruisce le immagini, crea i servizi Cloud Run e il trigger.</text><text x="30" y="730" class="s" fill="#80868b">Icone: Google Cloud icons (cloud.google.com/icons).</text>
+</svg>
