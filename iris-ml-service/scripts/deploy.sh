@@ -4,14 +4,15 @@
 # Usage:  ./scripts/deploy.sh
 # Optional environment variables (defaults in brackets):
 #   PROJECT_ID  [current gcloud project]
-#   REGION      [europe-west1]
+#   REGION      [gcloud compute/region, else europe-west1]
 #   REPOSITORY  [iris-repo]       must match the Terraform repository
 #   SERVICE     [iris-ml-service] Cloud Run service name
 #   TAG         [current timestamp]
 set -euo pipefail
 
 PROJECT_ID="${PROJECT_ID:-$(gcloud config get-value project)}"
-REGION="${REGION:-europe-west1}"
+REGION="${REGION:-$(gcloud config get-value compute/region 2>/dev/null)}"
+REGION="${REGION:-europe-west1}"   # fallback if no region is configured
 REPOSITORY="${REPOSITORY:-iris-repo}"
 SERVICE="${SERVICE:-iris-ml-service}"
 TAG="${TAG:-$(date +%Y%m%d-%H%M%S)}"

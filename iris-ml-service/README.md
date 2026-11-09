@@ -86,5 +86,26 @@ Ogni esecuzione crea una nuova revisione (utile per mostrare rollback e revision
 Si possono cambiare i valori con variabili d'ambiente, ad esempio
 `PROJECT_ID=... REGION=... ./scripts/deploy.sh`.
 
+### Nei lab Google Skills
+Il progetto e la regione cambiano a ogni avvio del lab. Prima di tutto:
+
+```bash
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+gcloud config set compute/region us-east1      # la regione indicata dal lab
+
+cd terraform
+cp terraform.tfvars.example terraform.tfvars
+terraform init
+terraform apply \
+  -var "project_id=$(gcloud config get-value project)" \
+  -var "region=$(gcloud config get-value compute/region)" \
+  -var "enable_apis=false"                     # le API le abilita già il comando sopra
+cd ..
+./scripts/deploy.sh                            # legge progetto e regione da gcloud
+```
+
+Se Terraform dà "Permission denied on resource project", l'id del progetto è
+quello di un lab precedente: usa sempre `gcloud config get-value project`.
+
 ## 6. Passi successivi (corso)
 Artifact Registry (push dell'immagine) → Cloud Run (deploy) → Cloud Build (automazione).
