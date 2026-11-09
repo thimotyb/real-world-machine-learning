@@ -14,3 +14,9 @@ variable "repository" {
   type        = string
   default     = "iris-repo"
 }
+
+variable "enable_apis" {
+  description = "Let Terraform enable the Artifact Registry and Cloud Run APIs (set false in labs)"
+  type        = bool
+  default     = true
+}

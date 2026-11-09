@@ -1,4 +1,5 @@
 # Copy this file to terraform.tfvars and set your values
-project_id = "my-gcp-project"
+project_id = "my-gcp-project"   # REPLACE with your real project id (in a lab: qwiklabs-gcp-...)
 region     = "europe-west1"
 repository = "iris-repo"
+enable_apis = true   # set to false in Google Skills labs

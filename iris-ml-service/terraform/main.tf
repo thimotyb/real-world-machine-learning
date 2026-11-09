@@ -18,9 +18,11 @@ provider "google" {
   region  = var.region
 }
 
-# Enable the APIs (Artifact Registry to store images, Cloud Run to run them)
+# Enable the APIs (Artifact Registry to store images, Cloud Run to run them).
+# In training labs (Google Skills) the APIs are usually already enabled and the
+# student account may not be allowed to list/enable services: set enable_apis = false.
 resource "google_project_service" "apis" {
-  for_each = toset(["artifactregistry.googleapis.com", "run.googleapis.com"])
+  for_each = var.enable_apis ? toset(["artifactregistry.googleapis.com", "run.googleapis.com"]) : toset([])
 
   service            = each.key
   disable_on_destroy = false # do not switch the API off when we run "terraform destroy"
