@@ -107,5 +107,9 @@ cd ..
 Se Terraform dà "Permission denied on resource project", l'id del progetto è
 quello di un lab precedente: usa sempre `gcloud config get-value project`.
 
+Esempio di deploy riuscito in un lab Google Skills (Cloud Shell, `us-east1`):
+
+![Deploy su Cloud Run dal Cloud Shell](docs/lab-deploy-cloud-run.png)
+
 ## 6. Passi successivi (corso)
 Artifact Registry (push dell'immagine) → Cloud Run (deploy) → Cloud Build (automazione).
