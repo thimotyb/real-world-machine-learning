@@ -33,17 +33,44 @@ iris-ml-service-with-notifications/
 - **Permessi minimi:** l'API può solo leggere dal bucket; il trainer scrive e aggiorna l'API;
   il trainer è privato, lo chiama solo Eventarc.
 
-## Esecuzione
+Il trigger visto nella console (Eventarc → Trigger → `iris-new-file`): evento
+`google.cloud.storage.object.v1.finalized` del bucket, destinazione il servizio Cloud Run
+`iris-trainer`, chiamato con il service account `iris-trainer`. La *Retry policy* è attiva:
+se il trainer non risponde in tempo Eventarc rimanda l'evento, per questo il trainer ignora i duplicati.
 
-Nei lab Google Skills il progetto e la regione cambiano a ogni avvio: prima di tutto
+![Trigger Eventarc iris-new-file](docs/lab-eventarc-trigger.png)
+
+## Istruzioni per far girare l'esempio in Google Skills
+
+**Lab di base:** avvia il lab
+[Hello Cloud Run](https://www.skills.google/focuses/30842?parent=catalog).
+Fornisce un progetto temporaneo (`qwiklabs-gcp-...`) con Cloud Shell, Docker e Terraform già pronti:
+non serve completare le istruzioni del lab, basta usare il suo ambiente. Progetto e regione
+cambiano a ogni avvio, per questo i comandi li leggono da `gcloud`.
+
+**1. Prendi il codice e imposta progetto e regione** (dal Cloud Shell)
+
+```bash
+git clone -b python3 https://github.com/thimotyb/real-world-machine-learning.git
+# se l'hai già clonato:  cd real-world-machine-learning && git pull
+cd real-world-machine-learning/iris-ml-service-with-notifications
+
+gcloud config get-value project                # deve essere il qwiklabs-gcp-... del lab
+gcloud config set compute/region us-east1      # la regione indicata dal lab
+```
+
+**2. Abilita le API** (nel lab Terraform non può farlo)
 
 ```bash
 gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
   eventarc.googleapis.com pubsub.googleapis.com storage.googleapis.com
-gcloud config set compute/region us-east1      # la regione indicata dal lab
 ```
 
-**1. Infrastruttura** (bucket, repository, service account):
+Aspetta 2-3 minuti: Eventarc crea il suo agente di servizio e i permessi impiegano un po' a
+propagarsi. Se il trigger viene creato subito dopo, può fallire la prima volta con
+`storage.buckets.get denied`: al secondo tentativo funziona.
+
+**3. Terraform** (bucket, repository, service account, permessi)
 
 ```bash
 cd terraform
@@ -52,44 +79,72 @@ terraform init
 terraform apply \
   -var "project_id=$(gcloud config get-value project)" \
   -var "region=$(gcloud config get-value compute/region)" \
-  -var "enable_apis=false"       # nei lab le API sono già abilitate dal comando sopra
+  -var "enable_apis=false"       # le API sono già abilitate dal passo 2
 cd ..
 ```
 
-**2. Immagini, servizi e trigger:**
+Controlla il piano (11 risorse da creare, nessuna da distruggere) e rispondi `yes`.
+
+**4. Immagini, servizi Cloud Run e trigger**
 
 ```bash
 ./scripts/deploy.sh
 ```
 
-Alla fine stampa l'URL dell'API. Il trigger può impiegare alcuni minuti prima di essere
-attivo e i permessi impiegano un po' a propagarsi: se la prima prova non parte, riprova dopo 2-3 minuti.
+Costruisce e carica le due immagini (alcuni minuti) e alla fine stampa `API URL`: copialo.
 
-**3. Prova**
+**5. Demo**
 
 ```bash
 BUCKET=$(gcloud config get-value project)-iris-data
 API=<URL stampato dallo script>
 
-curl $API/                       # model_uri è null: ancora nessun modello
+curl $API/                       # "model_uri": null: ancora nessun modello
 gcloud storage cp sample-data/iris-small.csv gs://$BUCKET/data/
-# attendi ~1 minuto, poi:
+# attendi 30-60 secondi, poi:
 curl $API/                       # model_uri punta al primo modello
 curl -X POST $API/predict -H "Content-Type: application/json" \
   -d '{"sepal_length":6.7,"sepal_width":3.0,"petal_length":5.2,"petal_width":2.3}'
 # risponde Iris-versicolor: il CSV piccolo non contiene la specie virginica
 
 gcloud storage cp sample-data/iris-full.csv gs://$BUCKET/data/
-# attendi ~1 minuto: nuova revisione, nuovo modello
+# attendi 30-60 secondi: nuova revisione, nuovo modello
 # la stessa richiesta ora risponde Iris-virginica
 ```
 
-Per seguire cosa succede: `gcloud run services logs read iris-trainer --region <regione>`
-e, nella console, Cloud Run → `iris-api` → Revisioni.
+Nella console: Cloud Run → `iris-api` → Revisioni (una nuova a ogni caricamento).
+Per i log: `gcloud run services logs read iris-trainer --region <regione>`.
+
+Esempio di esecuzione in un lab Google Skills: i log del trainer mostrano l'evento per
+`iris-small.csv`, l'addestramento, il modello salvato nel bucket e l'aggiornamento dell'API;
+un secondo dopo arriva l'evento del file `.pkl` appena creato, che viene ignorato.
+Il `curl $API/` finale conferma che l'API usa il nuovo modello (`model_uri` punta al `.pkl`).
+
+![Log del trainer nel Cloud Shell del lab](docs/lab-trainer-logs.png)
+
+Gli stessi log nella console, in Cloud Run → `iris-trainer` → Osservabilità → Log: le due richieste
+`POST 200` sono l'evento del CSV e quello del modello appena salvato (ignorato).
+
+![Log del servizio iris-trainer nella console Cloud Run](docs/lab-trainer-console.png)
+
+Il bucket dopo il primo caricamento: la cartella `data/` contiene il CSV, la cartella `models/`
+il modello creato dal trainer (`model-<generation>.pkl`).
+
+![Bucket con le cartelle data/ e models/](docs/lab-bucket-models.png)
 
 Con Postman: importa `postman/iris-ml-service-with-notifications.postman_collection.json`
 e imposta `base_url` all'URL dell'API (la richiesta "Predict - virginica" fallisce finché
 non è stato caricato `iris-full.csv`, ed è voluto).
+
+**Se qualcosa non va**
+
+| Sintomo | Cosa controllare |
+|---|---|
+| `403` su `google_project_iam_member` o `google_service_account` in Terraform | l'utente del lab non ha abbastanza diritti sul progetto (vedi "Permessi GCP necessari") |
+| `Permission denied on resource project` | l'id del progetto è quello di un lab precedente: usa `gcloud config get-value project` |
+| `Permission denied while using the Eventarc Service Agent` alla creazione del trigger | i permessi dell'agente di Eventarc si stanno propagando: `deploy.sh` riprova da solo per ~5 minuti; altrimenti aspetta e ricrea solo il trigger (comando `gcloud eventarc triggers create` dello script) |
+| Dopo il caricamento non succede nulla per più di 2-3 minuti | `gcloud eventarc triggers list --location <regione>` e i log del trainer |
+| Più revisioni per un solo caricamento | il trainer ha ricevuto l'evento due volte; dovrebbe ignorare i duplicati, segnalalo |
 
 ## Permessi GCP necessari
 

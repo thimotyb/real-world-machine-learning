@@ -52,15 +52,24 @@ gcloud run services add-iam-policy-binding "${TRAINER_SERVICE}" \
   --member "serviceAccount:${TRAINER_SA}" \
   --role roles/run.invoker
 
-# 5. The trigger: "an object was created in the bucket" -> trainer service
+# 5. The trigger: "an object was created in the bucket" -> trainer service.
+#    Right after enabling the Eventarc API its service agent may need a few minutes
+#    to get its permissions, so we retry for up to ~5 minutes.
 if ! gcloud eventarc triggers describe iris-new-file --location "${REGION}" >/dev/null 2>&1; then
-  gcloud eventarc triggers create iris-new-file \
-    --location "${REGION}" \
-    --event-filters "type=google.cloud.storage.object.v1.finalized" \
-    --event-filters "bucket=${BUCKET}" \
-    --destination-run-service "${TRAINER_SERVICE}" \
-    --destination-run-region "${REGION}" \
-    --service-account "${TRAINER_SA}"
+  for ATTEMPT in 1 2 3 4 5 6 7 8 9 10; do
+    if gcloud eventarc triggers create iris-new-file \
+      --location "${REGION}" \
+      --event-filters "type=google.cloud.storage.object.v1.finalized" \
+      --event-filters "bucket=${BUCKET}" \
+      --destination-run-service "${TRAINER_SERVICE}" \
+      --destination-run-region "${REGION}" \
+      --service-account "${TRAINER_SA}"; then
+      break
+    fi
+    [ "${ATTEMPT}" -eq 10 ] && { echo "Trigger creation failed: see the README troubleshooting table"; exit 1; }
+    echo "==> Eventarc permissions are probably still propagating: retry ${ATTEMPT}/10 in 30 seconds"
+    sleep 30
+  done
 fi
 
 API_URL="$(gcloud run services describe "${API_SERVICE}" --region "${REGION}" --format 'value(status.url)')"
