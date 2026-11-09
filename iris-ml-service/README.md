@@ -86,6 +86,11 @@ Ogni esecuzione crea una nuova revisione (utile per mostrare rollback e revision
 Si possono cambiare i valori con variabili d'ambiente, ad esempio
 `PROJECT_ID=... REGION=... ./scripts/deploy.sh`.
 
+### Lab Google Skills usato per l'esempio
+L'esempio è stato provato dentro il lab
+[Hello Cloud Run](https://www.skills.google/focuses/30842?parent=catalog):
+fornisce il progetto temporaneo, il Cloud Shell e Cloud Run già pronti.
+
 ### Nei lab Google Skills
 Il progetto e la regione cambiano a ogni avvio del lab. Prima di tutto:
 
@@ -110,6 +115,23 @@ quello di un lab precedente: usa sempre `gcloud config get-value project`.
 Esempio di deploy riuscito in un lab Google Skills (Cloud Shell, `us-east1`):
 
 ![Deploy su Cloud Run dal Cloud Shell](docs/lab-deploy-cloud-run.png)
+
+## Permessi GCP necessari
+
+Chi lancia Terraform e `scripts/deploy.sh` (utente o service account) ha bisogno di questi ruoli sul progetto:
+
+| Ruolo | A cosa serve |
+|---|---|
+| `roles/artifactregistry.admin` | creare il repository (Terraform) e fare il push dell'immagine |
+| `roles/run.admin` | distribuire il servizio Cloud Run e renderlo pubblico (`--allow-unauthenticated`) |
+| `roles/iam.serviceAccountUser` | permettere a Cloud Run di usare il service account predefinito (Compute Engine) |
+| `roles/serviceusage.serviceUsageAdmin` | solo se Terraform abilita le API (`enable_apis = true`); non serve se le API sono già abilitate |
+
+API da abilitare: `artifactregistry.googleapis.com` e `run.googleapis.com`.
+
+Nei lab Google Skills lo studente ha già questi permessi (ruolo Owner/Editor sul progetto temporaneo),
+ma non può elencare/abilitare le API con Terraform: per questo si usa `enable_apis = false`.
+Se il progetto ha una policy che vieta l'accesso pubblico, `--allow-unauthenticated` fallisce.
 
 ## 6. Passi successivi (corso)
 Artifact Registry (push dell'immagine) → Cloud Run (deploy) → Cloud Build (automazione).
