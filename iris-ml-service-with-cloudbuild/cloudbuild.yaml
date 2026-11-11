@@ -1,0 +1,83 @@
+# Pipeline: test -> build -> push -> deploy.
+# Substitutions with a leading "_" are ours; $PROJECT_ID and $SHORT_SHA are given by Cloud Build.
+# _DEPLOY=false (pull request trigger) stops after the build: nothing reaches Cloud Run.
+steps:
+  # 1. Tests, in parallel (waitFor '-' = start immediately)
+  - id: test-api
+    name: python:3.12-slim
+    waitFor: ['-']
+    entrypoint: bash
+    args:
+      - -c
+      - pip install -q -r <(python -c "import tomllib;print('\n'.join(tomllib.load(open('api/pyproject.toml','rb'))['project']['dependencies']))") pytest httpx && pytest -q api/tests
+  - id: test-trainer
+    name: python:3.12-slim
+    waitFor: ['-']
+    entrypoint: bash
+    args:
+      - -c
+      - pip install -q -r <(python -c "import tomllib;print('\n'.join(tomllib.load(open('trainer/pyproject.toml','rb'))['project']['dependencies']))") pytest && pytest -q trainer/tests
+
+  # 2. Build the two images (only if both test steps passed)
+  - id: build-api
+    name: gcr.io/cloud-builders/docker
+    waitFor: [test-api, test-trainer]
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-api:$SHORT_SHA', './api']
+  - id: build-trainer
+    name: gcr.io/cloud-builders/docker
+    waitFor: [test-api, test-trainer]
+    args: ['build', '-t', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-trainer:$SHORT_SHA', './trainer']
+
+  # 3. Push: done with the "images" list below, but we push now because deploy needs the images
+  - id: push-api
+    name: gcr.io/cloud-builders/docker
+    waitFor: [build-api]
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-api:$SHORT_SHA']
+  - id: push-trainer
+    name: gcr.io/cloud-builders/docker
+    waitFor: [build-trainer]
+    args: ['push', '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-trainer:$SHORT_SHA']
+
+  # 4. Deploy. Same settings as scripts/deploy.sh. The API deploy does NOT set MODEL_URI:
+  #    the value written by the trainer stays on the service.
+  - id: deploy-api
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: [push-api]
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [ "${_DEPLOY}" = "true" ] || { echo "_DEPLOY=false: skipping deploy"; exit 0; }
+        gcloud run deploy iris-api \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-api:$SHORT_SHA \
+          --region ${_REGION} \
+          --service-account iris-api@$PROJECT_ID.iam.gserviceaccount.com \
+          --allow-unauthenticated
+  - id: deploy-trainer
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: [push-trainer, deploy-api]
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        [ "${_DEPLOY}" = "true" ] || { echo "_DEPLOY=false: skipping deploy"; exit 0; }
+        gcloud run deploy iris-trainer \
+          --image ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-trainer:$SHORT_SHA \
+          --region ${_REGION} \
+          --service-account iris-trainer@$PROJECT_ID.iam.gserviceaccount.com \
+          --no-allow-unauthenticated \
+          --memory 1Gi --timeout 600 \
+          --set-env-vars PROJECT_ID=$PROJECT_ID,REGION=${_REGION},API_SERVICE=iris-api
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-api:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/iris-trainer:$SHORT_SHA
+
+substitutions:
+  _REGION: europe-west1
+  _REPO: iris-repo
+  _DEPLOY: 'true'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true

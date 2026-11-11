@@ -1,0 +1,14 @@
+[project]
+name = "iris-trainer"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]==0.115.6",
+    "pandas==2.2.3",
+    "scikit-learn==1.6.1",  # must be the same version used by the API
+    "google-cloud-storage==2.19.0",
+    "google-cloud-run==0.10.14",
+]
+
+[tool.fastapi]
+entrypoint = "main:app"
