@@ -20,7 +20,7 @@ La pipeline si può lanciare in **due modi**:
 ```
 iris-ml-service-with-cloudbuild/
 ├── cloudbuild.yaml        la pipeline
-├── api/  trainer/         come nell'esempio con le notifiche, più la cartella tests/
+├── api/  trainer/         come nell'esempio con le notifiche, più la cartella tests/ (anche sui log)
 ├── terraform/             bucket, repository immagini, service account (anche quello della pipeline)
 ├── scripts/
 │   ├── setup-events.sh    una tantum: trigger Eventarc "nuovo file nel bucket → trainer"
@@ -180,6 +180,37 @@ repository, quindi **ci vuole un repo GitHub con il contenuto di questa cartella
 
 Questa parte **non è stata provata nel lab** (richiede la connessione GitHub): il percorso a mano
 dei passi 1-9 è quello verificato.
+
+## Log strutturati (visibili in Cloud Logging)
+
+I due servizi scrivono i log con il modulo `logging` di Python (`app_logging.py`): su Cloud Run ogni riga
+è un oggetto JSON con `severity` e `message`, e Cloud Logging la salva come voce **strutturata**
+(icona di gravità nel Logs Explorer, campi aggiuntivi ricercabili). Non servono librerie né ruoli in più:
+Cloud Run raccoglie lo standard output. In locale gli stessi messaggi escono come testo leggibile.
+
+| Servizio | Voci principali |
+|---|---|
+| `iris-trainer` | `Event received` (bucket, file), `Ignored: not a CSV in data/`, `Model trained` (righe, accuracy, specie), `Model saved and API redeployed` (model_uri), `Duplicate event...` (WARNING), `Redeploy failed` (ERROR con stack trace) |
+| `iris-api` | `Model loaded` (model_uri, secondi), `No MODEL_URI...` (WARNING), `Prediction` (input, specie, model_uri), `Prediction refused...` (WARNING) |
+
+Dove guardarli: Console → Cloud Run → servizio → **Log**, oppure *Logging → Logs Explorer*. Esempi di filtro:
+
+```
+resource.type="cloud_run_revision" resource.labels.service_name="iris-trainer"
+jsonPayload.message="Model trained"
+severity>=WARNING
+jsonPayload.model_uri:"models/model-"
+```
+
+Da riga di comando (serve `roles/logging.viewer`):
+
+```bash
+gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="iris-trainer" AND jsonPayload.message="Model trained"' \
+  --limit 5 --format 'value(timestamp, jsonPayload.accuracy, jsonPayload.rows)'
+```
+
+Il livello si cambia con la variabile `LOG_LEVEL` (default `INFO`; `DEBUG`, `WARNING`...).
+Per aggiungere un campo ricercabile: `logger.info("testo", extra={"fields": {"nome": valore}})`.
 
 ## Se qualcosa non va
 

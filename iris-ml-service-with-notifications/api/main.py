@@ -9,9 +9,14 @@ Run locally with:  MODEL_URI=./model.pkl fastapi dev
 """
 import os
 import pickle
+import time
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+from app_logging import setup_logging
+
+logger = setup_logging("iris-api")
 
 MODEL_URI = os.environ.get("MODEL_URI")
 
@@ -31,7 +36,13 @@ def load_model(uri):
 
 
 # Load once at startup. Before the first CSV is uploaded there is no model yet.
-model = load_model(MODEL_URI) if MODEL_URI else None
+if MODEL_URI:
+    started = time.perf_counter()
+    model = load_model(MODEL_URI)
+    logger.info("Model loaded", extra={"fields": {"model_uri": MODEL_URI, "seconds": round(time.perf_counter() - started, 2)}})
+else:
+    model = None
+    logger.warning("No MODEL_URI: the API starts without a model, /predict answers 503")
 
 
 class IrisFeatures(BaseModel):
@@ -50,6 +61,8 @@ def health():
 @app.post("/predict")
 def predict(f: IrisFeatures):
     if model is None:
+        logger.warning("Prediction refused: no model yet")
         raise HTTPException(status_code=503, detail="No model yet: upload a CSV to the bucket")
     species = model.predict([[f.sepal_length, f.sepal_width, f.petal_length, f.petal_width]])[0]
+    logger.info("Prediction", extra={"fields": {"species": str(species), "model_uri": MODEL_URI, **f.model_dump()}})
     return {"species": str(species), "model_uri": MODEL_URI}

@@ -187,6 +187,37 @@ Se manca `artifactregistry.reader` il trainer addestra e salva il modello ma l'a
 dell'API fallisce con `artifactregistry.repositories.downloadArtifacts denied`.
 Dopo aver abilitato l'API Eventarc, i permessi dell'agente di servizio possono impiegare qualche minuto.
 
+## Log strutturati (visibili in Cloud Logging)
+
+I due servizi scrivono i log con il modulo `logging` di Python (`app_logging.py`): su Cloud Run ogni riga
+è un oggetto JSON con `severity` e `message`, e Cloud Logging la salva come voce **strutturata**
+(icona di gravità nel Logs Explorer, campi aggiuntivi ricercabili). Non servono librerie né ruoli in più:
+Cloud Run raccoglie lo standard output. In locale gli stessi messaggi escono come testo leggibile.
+
+| Servizio | Voci principali |
+|---|---|
+| `iris-trainer` | `Event received` (bucket, file), `Ignored: not a CSV in data/`, `Model trained` (righe, accuracy, specie), `Model saved and API redeployed` (model_uri), `Duplicate event...` (WARNING), `Redeploy failed` (ERROR con stack trace) |
+| `iris-api` | `Model loaded` (model_uri, secondi), `No MODEL_URI...` (WARNING), `Prediction` (input, specie, model_uri), `Prediction refused...` (WARNING) |
+
+Dove guardarli: Console → Cloud Run → servizio → **Log**, oppure *Logging → Logs Explorer*. Esempi di filtro:
+
+```
+resource.type="cloud_run_revision" resource.labels.service_name="iris-trainer"
+jsonPayload.message="Model trained"
+severity>=WARNING
+jsonPayload.model_uri:"models/model-"
+```
+
+Da riga di comando (serve `roles/logging.viewer`):
+
+```bash
+gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="iris-trainer" AND jsonPayload.message="Model trained"' \
+  --limit 5 --format 'value(timestamp, jsonPayload.accuracy, jsonPayload.rows)'
+```
+
+Il livello si cambia con la variabile `LOG_LEVEL` (default `INFO`; `DEBUG`, `WARNING`...).
+Per aggiungere un campo ricercabile: `logger.info("testo", extra={"fields": {"nome": valore}})`.
+
 ## Formato del CSV
 Stesse colonne di `Iris.csv`: `SepalLengthCm, SepalWidthCm, PetalLengthCm, PetalWidthCm, Species`
 (la colonna `Id` è ignorata). Il file va caricato nella cartella `data/` del bucket.

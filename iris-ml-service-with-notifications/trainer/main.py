@@ -18,6 +18,8 @@ from google.cloud import run_v2, storage
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 
+from app_logging import setup_logging
+
 # Settings given at deploy time
 PROJECT_ID = os.environ.get("PROJECT_ID")
 REGION = os.environ.get("REGION")
@@ -25,6 +27,8 @@ API_SERVICE = os.environ.get("API_SERVICE", "iris-api")
 
 FEATURES = ["SepalLengthCm", "SepalWidthCm", "PetalLengthCm", "PetalWidthCm"]
 LABEL = "Species"
+
+logger = setup_logging("iris-trainer")
 
 app = FastAPI(title="Iris trainer")
 
@@ -36,7 +40,9 @@ def train_model(csv_bytes):
         df[FEATURES], df[LABEL], test_size=0.3, random_state=0
     )
     model = svm.SVC(kernel="linear", C=1).fit(X_train.values, y_train)
-    return model, model.score(X_test.values, y_test)
+    accuracy = model.score(X_test.values, y_test)
+    logger.info("Model trained", extra={"fields": {"rows": len(df), "accuracy": round(accuracy, 3), "species": sorted(map(str, model.classes_))}})
+    return model, accuracy
 
 
 def redeploy_api(model_uri):
@@ -53,6 +59,7 @@ def redeploy_api(model_uri):
     others = [e for e in container.env if e.name != "MODEL_URI"]
     container.env = others + [run_v2.EnvVar(name="MODEL_URI", value=model_uri)]
     client.update_service(service=service)  # returns immediately, the rollout continues in background
+    logger.info("API service update requested", extra={"fields": {"api_service": API_SERVICE, "model_uri": model_uri}})
 
 
 @app.post("/")
@@ -60,17 +67,16 @@ async def handle_event(request: Request):
     # The body of a Cloud Storage event contains the bucket and the file name
     event = await request.json()
     bucket_name, file_name = event["bucket"], event["name"]
-    print(f"Event received: gs://{bucket_name}/{file_name}")
+    logger.info("Event received", extra={"fields": {"bucket": bucket_name, "file_name": file_name}})
 
     # Only react to CSV files in data/. The models/ folder is ignored, so that
     # saving a model does not trigger a new training.
     if not (file_name.startswith("data/") and file_name.endswith(".csv")):
-        print("Ignored: not a CSV in data/")
+        logger.info("Ignored: not a CSV in data/", extra={"fields": {"file_name": file_name}})
         return {"status": "ignored"}
 
     bucket = storage.Client().bucket(bucket_name)
     model, accuracy = train_model(bucket.blob(file_name).download_as_bytes())
-    print(f"Trained on {file_name}, accuracy {accuracy:.3f}")
 
     # Every upload gets its own versioned model. The name comes from the "generation"
     # of the uploaded file, so the same event always gives the same model name.
@@ -81,14 +87,14 @@ async def handle_event(request: Request):
         # Eventarc delivers events AT LEAST once: a duplicate event stops here.
         bucket.blob(model_file).upload_from_string(pickle.dumps(model), if_generation_match=0)
     except PreconditionFailed:
-        print(f"Duplicate event, {model_file} already exists")
+        logger.warning("Duplicate event, model already exists", extra={"fields": {"model_file": model_file}})
         return {"status": "duplicate"}
 
     try:
         redeploy_api(model_uri)
     except Exception as e:
         # Show the real reason in the logs and in the response (easier to debug permissions)
-        print(f"Redeploy failed: {e!r}")
+        logger.exception("Redeploy failed", extra={"fields": {"model_uri": model_uri}})
         raise HTTPException(status_code=500, detail=f"Redeploy failed: {e!r}")
-    print(f"API redeployed with {model_uri}")
+    logger.info("Model saved and API redeployed", extra={"fields": {"model_uri": model_uri, "accuracy": round(accuracy, 3)}})
     return {"status": "trained", "accuracy": accuracy, "model_uri": model_uri}
